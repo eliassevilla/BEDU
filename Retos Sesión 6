@@ -1,0 +1,63 @@
+### RETO 3 SESIÓN 5 ###
+
+# Usando la colección sample_airbnb.listingsAndReviews, mediante el uso de agregaciones, encontrar el número de publicaciones que tienen conexión a Internet, sea desde Wifi o desde cable (Ethernet).
+[{$match: {
+  amenities: {
+  $in: ["Wifi","Ethernet"]
+  }
+}}, {$count: 'Casas con Servicio de Internet'}]
+
+### RETO 1 ###
+
+# Con base en el ejemplo 1, modifica el agrupamiento para que muestre el costo promedio por habitación por país de las propiedades de tipo casa.
+[{$match: {
+  property_type: "House"
+}}, {$match: {
+  bedrooms: {$gte: 1}
+}}, {$addFields: {
+  precio_por_habitacion: {
+    $divide: ["$price", "$bedrooms"]
+  }
+}}, {$group: {
+  _id: "$address.country",
+  num_recamaras: {
+    $sum: 1
+  },
+  total:{
+    $sum: "$precio_por_habitacion"
+  }
+}}, {$addFields: {
+  costo_avg: {
+    $divide: ["$total", "$num_recamaras"]
+  },
+  pais: "$_id"
+}}, {$project: {
+  _id: 0,
+  pais: 1,
+  costo_avg: 1
+
+  }}]
+  
+### RETO 2 ###
+# Usando las colecciones comments y users, se requiere conocer el correo y contraseña de cada persona que realizó un comentario. Construye un pipeline que genere como resultado estos datos.
+[{$lookup: {
+  from: 'users',
+  localField: 'email',
+  foreignField: 'email',
+  as: 'usuario'
+}}, {$addFields: {
+  usuario_objeto: {
+    $arrayElemAt: ["$usuario", 0]
+  }
+}}, {$addFields: {
+  usuario_password: "$usuario_objeto.password"
+}}, {$project: {
+  _id: 0,
+  text: 1,
+  name: 1,
+  usuario_password: 1
+}}]
+
+### RETO 3 ###
+# Usando el pipeline que generaste en el Reto 2, genera la vista correspondiente.
+# Adjunto imagen de la evidencia de haber hecho la vista
